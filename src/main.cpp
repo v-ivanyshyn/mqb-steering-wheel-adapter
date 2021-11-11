@@ -8,6 +8,7 @@ const int DEBUG_ACC = 0;
 #include <Arduino.h>
 #include <EEPROM.h>
 #define EEPROM_ACC_ON_ADDRESS 0
+#define DEBUG_SERIAL 2
 #if DEBUG_SERIAL
 #include <SoftwareSerial.h>
 SoftwareSerial debug_serial(/*rx*/3, /*tx*/2);
@@ -83,6 +84,7 @@ void loop() {
     memcpy(linMqb.light_data, linPq.light_data, 4);
     linPq.pressed_button = linMqb.pressed_button;
     linPq.pressed_gear_shifter = linMqb.pressed_gear_shifter;
+    linPq.pressed_horn = linMqb.pressed_horn;
     for (unsigned int i=0; i<sizeof(buttons) / sizeof(buttons[0]); i++) {
         if (buttons[i].mqb_id == linMqb.pressed_button) {
             linPq.pressed_button = buttons[i].pq_id;

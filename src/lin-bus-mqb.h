@@ -95,6 +95,7 @@ class lib_bus_mqb
                             }
                             pressed_button = response[1];
                             pressed_gear_shifter = (response[6] & 0x0F); // gear pressed
+                            pressed_horn = response[7];
                             if (DEBUG_MQB == 2) {DebugLog("\nMQB button: "); DebugLog(pressed_button, HEX);}
                             state = IDLE;
                             result = 1;
@@ -166,6 +167,7 @@ class lib_bus_mqb
 
     uint8_t pressed_button = 0;
     uint8_t pressed_gear_shifter = 0;
+    uint8_t pressed_horn = 0;
     enum {
         ACC_NONE = 0,
         ACC_SET,
