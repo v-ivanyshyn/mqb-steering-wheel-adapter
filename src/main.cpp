@@ -1,14 +1,13 @@
 #define LIN_PQ 1
 #define LIN_MQB 1
-#define DEBUG_SERIAL 0
+#define DEBUG_SERIAL 1
 const int DEBUG_PQ = 0;
 const int DEBUG_MQB = 0;
-const int DEBUG_ACC = 0;
+const int DEBUG_ACC = 3;
 
 #include <Arduino.h>
 #include <EEPROM.h>
 #define EEPROM_ACC_ON_ADDRESS 0
-#define DEBUG_SERIAL 2
 #if DEBUG_SERIAL
 #include <SoftwareSerial.h>
 SoftwareSerial debug_serial(/*rx*/3, /*tx*/2);

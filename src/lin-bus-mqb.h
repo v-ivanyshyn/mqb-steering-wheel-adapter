@@ -232,7 +232,7 @@ class lib_bus_mqb
         if (response[1] & 0x10)   return ACC_OFF;
         if (response[2] & 0x04)   return ACC_MINUS;
         if (response[2] & 0x02)   return ACC_PLUS;
-        //if (response[1] & 0x80)   return ACC_MODE; // always pressed (on wheels with "view" button)
+        if (response[1] & 0x80)   return ACC_MODE; // always pressed (on wheels with "view" button)
         if (response[2] & 0x20)   return ACC_DIST;
         if (response[2] & 0x40)   return ACC_DIST; // (on wheels with "view" button)
         return ACC_NONE;

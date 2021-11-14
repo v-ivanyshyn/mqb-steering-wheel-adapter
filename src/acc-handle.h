@@ -1,4 +1,5 @@
 #define ACC_ON_BTN lib_bus_mqb::ACC_OFF
+#define ACC_MODE_BTN lib_bus_mqb::ACC_MODE
 
 class AccHandle {
 #if defined(__AVR_ATmega328P__)
@@ -16,8 +17,11 @@ class AccHandle {
     const uint8_t ACC_DIST_PLUS_PIN = A1;
     const uint8_t ACC_DIST_MINUS_PIN = A2;
     const uint8_t ACC_SET_PIN = A3;
+    const uint8_t WHEEL_HEAT_PIN = 5;
 public:
     bool accOn = false;
+    bool wheelHeatOn = false;
+    unsigned long modePressedTimer;
     unsigned long distPressedTimer;
     void setup() {
         pinMode(ACC_ON_PIN, OUTPUT);
@@ -28,8 +32,10 @@ public:
         pinMode(ACC_DIST_PLUS_PIN, OUTPUT);
         pinMode(ACC_DIST_MINUS_PIN, OUTPUT);
         pinMode(ACC_SET_PIN, OUTPUT);
+        pinMode(WHEEL_HEAT_PIN, OUTPUT);
         accOn = EEPROM.read(EEPROM_ACC_ON_ADDRESS);
         distPressedTimer = 0;
+        modePressedTimer = 0;
     }
 
     void loop(uint8_t pressedAccButton) {
@@ -52,10 +58,24 @@ public:
         if ((distPressedTimer > time) && ((pressedAccButton == lib_bus_mqb::ACC_PLUS) || (pressedAccButton == lib_bus_mqb::ACC_MINUS))) {
             distPressedTimer = millis() + 1000;
         }
-        if (pressedAccButton != 0 && pressedAccButton != ACC_ON_BTN && !accOn) {
+        if (pressedAccButton != 0 && pressedAccButton != ACC_ON_BTN && pressedAccButton != ACC_MODE_BTN && !accOn) {
             accOn = true;   // automatically turn ACC on if any button pressed
             EEPROM.write(EEPROM_ACC_ON_ADDRESS, accOn);
             if (DEBUG_ACC == 1) DebugLog(accOn ? "ACC ON" : "ACC OFF");
+        }
+        if (pressedAccButton == ACC_MODE_BTN) {
+            if (modePressedTimer == 0) {
+                modePressedTimer = millis() + 5000;
+            }
+            else if ((modePressedTimer > 1) && (modePressedTimer < time)) {
+                modePressedTimer = 1;
+                wheelHeatOn = !wheelHeatOn;
+                if (DEBUG_ACC == 3) {
+                    DebugLog(wheelHeatOn ? "Wheel heater ON " : "Wheel heater OFF ");
+                }
+            }
+        } else if (pressedAccButton != ACC_MODE_BTN) {
+            modePressedTimer = 0;
         }
         uint8_t ACC_ON = accOn ? HIGH : LOW;
         uint8_t ACC_RESUME = (pressedAccButton == lib_bus_mqb::ACC_RESUME) ? HIGH : LOW;
@@ -65,6 +85,7 @@ public:
         uint8_t ACC_DIST_PLUS = (distPressedTimer > time) && (pressedAccButton == lib_bus_mqb::ACC_PLUS) ? HIGH : LOW;
         uint8_t ACC_DIST_MINUS = (distPressedTimer > time) && (pressedAccButton == lib_bus_mqb::ACC_MINUS) ? HIGH : LOW;
         uint8_t ACC_SET = (pressedAccButton == lib_bus_mqb::ACC_SET) ? HIGH : LOW;
+        uint8_t WHEEL_HEAT = wheelHeatOn ? HIGH : LOW;
         digitalWrite(ACC_ON_PIN, ACC_ON);
         digitalWrite(ACC_RESUME_PIN, ACC_RESUME);
         digitalWrite(ACC_CANCEL_PIN, ACC_CANCEL);
@@ -73,6 +94,7 @@ public:
         digitalWrite(ACC_DIST_PLUS_PIN, ACC_DIST_PLUS);
         digitalWrite(ACC_DIST_MINUS_PIN, ACC_DIST_MINUS);
         digitalWrite(ACC_SET_PIN, ACC_SET);
+        digitalWrite(WHEEL_HEAT_PIN, WHEEL_HEAT);
         // if (DEBUG_ACC == 2) {
         //     DebugLog("\nACC handle: ");
         //     DebugLog("BTN: "); DebugLog(pressedAccButton, HEX); DebugLog(" "); 
