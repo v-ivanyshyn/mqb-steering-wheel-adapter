@@ -23,6 +23,7 @@ public:
     bool wheelHeatOn = false;
     unsigned long modePressedTimer;
     unsigned long distPressedTimer;
+    unsigned long wheelHeatTimer;
     void setup() {
         pinMode(ACC_ON_PIN, OUTPUT);
         pinMode(ACC_RESUME_PIN, OUTPUT);
@@ -36,6 +37,7 @@ public:
         accOn = EEPROM.read(EEPROM_ACC_ON_ADDRESS);
         distPressedTimer = 0;
         modePressedTimer = 0;
+        wheelHeatTimer = 0;
     }
 
     void loop(uint8_t pressedAccButton) {
@@ -63,19 +65,35 @@ public:
             EEPROM.write(EEPROM_ACC_ON_ADDRESS, accOn);
             if (DEBUG_ACC == 1) DebugLog(accOn ? "ACC ON" : "ACC OFF");
         }
+        // Track MODE button long pressed for switching wheel heater
         if (pressedAccButton == ACC_MODE_BTN) {
             if (modePressedTimer == 0) {
-                modePressedTimer = millis() + 5000;
+                // Mode button must be pressed for 2 seconds for sweetching wheel heater
+                modePressedTimer = millis() + 2000;
             }
             else if ((modePressedTimer > 1) && (modePressedTimer < time)) {
                 modePressedTimer = 1;
                 wheelHeatOn = !wheelHeatOn;
+                if (wheelHeatOn) {
+                    // set wheel heater timer for 5 minutes. Automatically turn wheel heater off after that time.
+                    wheelHeatTimer = millis() + 300000;
+                } else {
+                    wheelHeatTimer = 0;
+                }
                 if (DEBUG_ACC == 3) {
-                    DebugLog(wheelHeatOn ? "Wheel heater ON " : "Wheel heater OFF ");
+                    DebugLog(wheelHeatOn ? "Wheel heater ON \n" : "Wheel heater OFF \n");
                 }
             }
         } else if (pressedAccButton != ACC_MODE_BTN) {
             modePressedTimer = 0;
+        }
+        // Automatically turn of wheel heater after 5 minutes
+        if (wheelHeatOn && (wheelHeatTimer < time)) {
+            wheelHeatTimer = 0;
+            wheelHeatOn = 0;
+            if (DEBUG_ACC == 3) {
+                DebugLog("Wheel heater OFF by timer \n");
+            }
         }
         uint8_t ACC_ON = accOn ? HIGH : LOW;
         uint8_t ACC_RESUME = (pressedAccButton == lib_bus_mqb::ACC_RESUME) ? HIGH : LOW;
