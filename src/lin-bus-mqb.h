@@ -9,6 +9,7 @@ class lib_bus_mqb
     public:
     static const uint8_t BUTTONS_ID = 0x0E;
     static const uint8_t ACC_BUTTONS_ID = 0x0F;
+    static const uint8_t TEMPERATURE_ID = 0x3A;
     static const uint8_t LIGHT_ID = 0x0D;
 
     lib_bus_mqb(uint8_t rx, uint8_t tx, uint8_t cs)
@@ -37,14 +38,23 @@ class lib_bus_mqb
                 memset(response, 0, sizeof(response));
                 response_data_index = 0;
                 command = (command + 1) % COMMANDS_COUNT;
-                if (command == REQUEST_BUTTONS || command == REQUEST_ACC_BUTTONS)
+                if (command == REQUEST_BUTTONS || command == REQUEST_ACC_BUTTONS || REQUEST_TEMPERATURE)
                     state = WRITE_REQUEST;
                 else if (command == SEND_LIGHT_DATA)
                     state = WRITE_DATA;
                 result = 0;
             break;
             case WRITE_REQUEST:
-                request_id = command == REQUEST_BUTTONS ? BUTTONS_ID : ACC_BUTTONS_ID;
+                if (command == REQUEST_BUTTONS) {
+                    request_id = BUTTONS_ID;
+                    response_data_length = 8;
+                } else if (command == REQUEST_ACC_BUTTONS) {
+                    request_id = ACC_BUTTONS_ID;
+                    response_data_length = 8;
+                } else {
+                    request_id = TEMPERATURE_ID;
+                    response_data_length = 2;
+                }
                 response_data_index = 0;
                 if (DEBUG_MQB == 2) {DebugLog("\nMQB request "); DebugLog(request_id, HEX);}
                 write_request(request_id);
@@ -56,17 +66,17 @@ class lib_bus_mqb
                 if (serial_mqb.available()) {
                     uint8_t c = serial_mqb.read();
                     response[response_data_index++] = c;
-                    if (response_data_index < 8){
+                    if (response_data_index < response_data_length){
                         result = 1;
                     }
-                    else if (response_data_index == 8) {
+                    else if (response_data_index == response_data_length) {
                         if (DEBUG_MQB == 2) {
                             DebugLog("\nMQB data:"); 
                             for (int i=0; i<response_data_index; i++) { DebugLog(" "); DebugLog(response[i], HEX); }
                         }
                         state = READ_CHECKSUM;
                     }
-                    else if (response_data_index > 8) {
+                    else if (response_data_index > response_data_length) {
                         state = IDLE;
                         result = -1; 
                     }
@@ -121,6 +131,12 @@ class lib_bus_mqb
                             state = IDLE;
                             result = 1;
                         }
+                        else if (command == REQUEST_TEMPERATURE) {
+                            temperature_sensor = response[0];
+                            if (DEBUG_MQB == 2) {DebugLog("\nMQB temperature: "); DebugLog(temperature_sensor, HEX);}
+                            state = IDLE;
+                            result = 1;
+                        }
                         else {
                             state = IDLE;
                             result = -1;
@@ -168,6 +184,7 @@ class lib_bus_mqb
     uint8_t pressed_button = 0;
     uint8_t pressed_gear_shifter = 0;
     uint8_t pressed_horn = 0;
+    uint8_t temperature_sensor = 0;
     enum {
         ACC_NONE = 0,
         ACC_SET,
@@ -195,6 +212,7 @@ class lib_bus_mqb
         REQUEST_BUTTONS = 0,
         REQUEST_ACC_BUTTONS,
         SEND_LIGHT_DATA,
+        REQUEST_TEMPERATURE,
         COMMANDS_COUNT
     } command;
 
@@ -247,4 +265,5 @@ class lib_bus_mqb
     unsigned long response_timer = 0;
     uint8_t response[8];
     uint8_t response_data_index = 0;
+    uint8_t response_data_length = 8;
 };

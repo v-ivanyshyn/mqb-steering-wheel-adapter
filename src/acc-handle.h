@@ -18,6 +18,9 @@ class AccHandle {
     const uint8_t ACC_DIST_MINUS_PIN = A2;
     const uint8_t ACC_SET_PIN = A3;
     const uint8_t WHEEL_HEAT_PIN = 5;
+    // Отключение подогрева при достижении рулем 30 град. цельсия
+    // [Температура в град. цельсия] = [значения с датчика] - 68.
+    const uint8_t WHEEL_TEMPERATUR_OFF = 0x62;
 public:
     bool accOn = false;
     bool wheelHeatOn = false;
@@ -40,7 +43,7 @@ public:
         wheelHeatTimer = 0;
     }
 
-    void loop(uint8_t pressedAccButton) {
+    void loop(uint8_t pressedAccButton, uint8_t temperatureSensor) {
 #if LIN_MQB
         static unsigned long time = millis();
         time = millis();
@@ -86,6 +89,14 @@ public:
             }
         } else if (pressedAccButton != ACC_MODE_BTN) {
             modePressedTimer = 0;
+        }
+        // Отключение подогрева руля по температуре
+        if (wheelHeatOn && (temperatureSensor >= WHEEL_TEMPERATUR_OFF)) {
+            wheelHeatTimer = 0;
+            wheelHeatOn = 0;
+            if (DEBUG_ACC == 3) {
+                DebugLog("Wheel heater OFF by temperature \n");
+            }
         }
         // Automatically turn of wheel heater after 5 minutes
         if (wheelHeatOn && (wheelHeatTimer < time)) {

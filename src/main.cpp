@@ -93,7 +93,7 @@ void loop() {
 
 #endif
 #if LIN_MQB
-    accHandle.loop(linMqb.pressed_acc_button);
+    accHandle.loop(linMqb.pressed_acc_button, linMqb.temperature_sensor);
 #endif
     time = millis();
 }
