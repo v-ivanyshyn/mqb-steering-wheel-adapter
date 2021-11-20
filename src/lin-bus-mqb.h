@@ -38,7 +38,7 @@ class lib_bus_mqb
                 memset(response, 0, sizeof(response));
                 response_data_index = 0;
                 command = (command + 1) % COMMANDS_COUNT;
-                if (command == REQUEST_BUTTONS || command == REQUEST_ACC_BUTTONS || REQUEST_TEMPERATURE)
+                if ((command == REQUEST_BUTTONS) || (command == REQUEST_ACC_BUTTONS) || (command == REQUEST_TEMPERATURE))
                     state = WRITE_REQUEST;
                 else if (command == SEND_LIGHT_DATA)
                     state = WRITE_DATA;
