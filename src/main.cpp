@@ -1,9 +1,9 @@
 #define LIN_PQ 1
 #define LIN_MQB 1
-#define DEBUG_SERIAL 0
+#define DEBUG_SERIAL 1
 const int DEBUG_PQ = 0;
 const int DEBUG_MQB = 0;
-const int DEBUG_ACC = 0;
+const int DEBUG_ACC = 3;
 
 #include <Arduino.h>
 #include <EEPROM.h>
@@ -83,6 +83,7 @@ void loop() {
     memcpy(linMqb.light_data, linPq.light_data, 4);
     linPq.pressed_button = linMqb.pressed_button;
     linPq.pressed_gear_shifter = linMqb.pressed_gear_shifter;
+    linPq.pressed_horn = linMqb.pressed_horn;
     for (unsigned int i=0; i<sizeof(buttons) / sizeof(buttons[0]); i++) {
         if (buttons[i].mqb_id == linMqb.pressed_button) {
             linPq.pressed_button = buttons[i].pq_id;
@@ -92,7 +93,7 @@ void loop() {
 
 #endif
 #if LIN_MQB
-    accHandle.loop(linMqb.pressed_acc_button);
+    accHandle.loop(linMqb.pressed_acc_button, linMqb.temperature_sensor);
 #endif
     time = millis();
 }

@@ -59,6 +59,7 @@ class lib_bus_pq
                             }
                             buttons_response[1] = pressed_button;
                             buttons_response[6] = pressed_gear_shifter | 0x30;
+                            buttons_response[7] = pressed_horn;
                             if (DEBUG_PQ == 2) {
                                 DebugLog("\nPQ response "); DebugLog(request_id, HEX); DebugLog(":");
                                 for (int i=0; i<8; i++) { DebugLog(" "); DebugLog(buttons_response[i], HEX); }
@@ -115,6 +116,7 @@ class lib_bus_pq
     }
 
     uint8_t pressed_button = 0;
+    uint8_t pressed_horn = 0;
     uint8_t pressed_gear_shifter = 0;
     uint8_t light_data[4];
 
