@@ -104,6 +104,7 @@ class lib_bus_mqb
                                 }
                             }
                             pressed_button = response[1];
+                            #include "buttons.h";
                             pressed_gear_shifter = (response[6] & 0x0F); // gear pressed
                             pressed_horn = response[7];
                             if (DEBUG_MQB == 2) {DebugLog("\nMQB button: "); DebugLog(pressed_button, HEX);}
