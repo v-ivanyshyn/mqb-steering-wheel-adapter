@@ -37,6 +37,8 @@ struct {
 } buttons[] = {
 // MQB right side:
     {0x00, 0x00},
+    {0x74, 0x74}, // travel asist
+    {0x25, 0x25}, // Heat Wheel
     {0x03, 0x16}, // prev
     {0x02, 0x15}, // next
     {0x1A, 0x19}, // phone <- voice/mic
