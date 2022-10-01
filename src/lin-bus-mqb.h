@@ -11,6 +11,11 @@ class lib_bus_mqb
     static const uint8_t ACC_BUTTONS_ID = 0x0F;
     static const uint8_t TEMPERATURE_ID = 0x3A;
     static const uint8_t LIGHT_ID = 0x0D;
+    unsigned long modPressedTimer = 0;
+	int startPressed = 0;    // the moment the button was pressed
+    int endPressed = 0;      // the moment the button was released
+    int holdTime = 0;        // how long the button was hold
+    int idleTime = 0;        // how long the button was idle
 
     lib_bus_mqb(uint8_t rx, uint8_t tx, uint8_t cs)
     : rx_pin(rx), tx_pin(tx), cs_pin(cs), serial_mqb(rx, tx) {
@@ -27,6 +32,7 @@ class lib_bus_mqb
 
     int loop() {
         int result = 0;
+        static unsigned long time = millis();
         
         switch (state) {
             case IDLE:
@@ -104,6 +110,7 @@ class lib_bus_mqb
                                 }
                             }
                             pressed_button = response[1];
+                            #include "buttons.h";
                             pressed_gear_shifter = (response[6] & 0x0F); // gear pressed
                             pressed_horn = response[7];
                             if (DEBUG_MQB == 2) {DebugLog("\nMQB button: "); DebugLog(pressed_button, HEX);}
